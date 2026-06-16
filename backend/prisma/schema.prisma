@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Phase {
+  group
+  round_of_32
+  round_of_16
+  quarterfinal
+  semifinal
+  bronze
+  final
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  phone        String       @unique
+  passwordHash String       @map("password_hash")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  predictions  Prediction[]
+
+  @@map("users")
+}
+
+model Team {
+  id          Int     @id @default(autoincrement())
+  name        String
+  flag        String
+  groupLetter String  @map("group_letter")
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+
+  @@map("teams")
+}
+
+model Match {
+  id          Int          @id @default(autoincrement())
+  matchDate   DateTime?    @map("match_date")
+  phase       Phase        @default(group)
+  groupLetter String?      @map("group_letter")
+  homeTeamId  Int?         @map("home_team_id")
+  awayTeamId  Int?         @map("away_team_id")
+  homeScore   Int?         @map("home_score")
+  awayScore   Int?         @map("away_score")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  homeTeam    Team?        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam    Team?        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  predictions Prediction[]
+
+  @@index([matchDate])
+  @@map("matches")
+}
+
+model Prediction {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  matchId   Int      @map("match_id")
+  homeScore Int      @map("home_score")
+  awayScore Int      @map("away_score")
+  points    Int?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id])
+  match     Match    @relation(fields: [matchId], references: [id])
+
+  @@unique([userId, matchId])
+  @@index([userId])
+  @@index([matchId])
+  @@map("predictions")
+}

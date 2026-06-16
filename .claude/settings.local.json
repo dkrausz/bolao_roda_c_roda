@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(Remove-Item \"D:\\\\Danilo\\\\Programacao\\\\videCode\\\\bolao\\\\backend\\\\src\\\\db.ts\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item \"D:\\\\Danilo\\\\Programacao\\\\videCode\\\\bolao\\\\backend\\\\migrations\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item \"D:\\\\Danilo\\\\Programacao\\\\videCode\\\\bolao\\\\backend\\\\seeds\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Write-Host \"Limpeza concluída\")"
+    ]
+  }
+}
