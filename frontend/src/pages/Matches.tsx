@@ -58,7 +58,7 @@ export default function Matches() {
       <header className="page-header">
         <div>
           <h2 className="page-title">Jogos</h2>
-          <p className="page-subtitle">Prazo: 17h (hora da Suécia)</p>
+          <p className="page-subtitle">Prazo: 12h (horário de Brasília)</p>
         </div>
       </header>
 

@@ -5,7 +5,10 @@
       "Bash(Remove-Item \"D:\\\\Danilo\\\\Programacao\\\\videCode\\\\bolao\\\\backend\\\\src\\\\db.ts\" -ErrorAction SilentlyContinue)",
       "Bash(Remove-Item \"D:\\\\Danilo\\\\Programacao\\\\videCode\\\\bolao\\\\backend\\\\migrations\" -Recurse -ErrorAction SilentlyContinue)",
       "Bash(Remove-Item \"D:\\\\Danilo\\\\Programacao\\\\videCode\\\\bolao\\\\backend\\\\seeds\" -Recurse -ErrorAction SilentlyContinue)",
-      "Bash(Write-Host \"Limpeza concluída\")"
+      "Bash(Write-Host \"Limpeza concluída\")",
+      "WebFetch(domain:www.toffeeweb.com)",
+      "WebFetch(domain:worldcupwiki.com)",
+      "WebFetch(domain:www.nbcsports.com)"
     ]
   }
 }

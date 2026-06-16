@@ -115,7 +115,7 @@ export default function Home({ auth, onLogout }: Props) {
             <span className="rule-icon">⏰</span>
             <div>
               <strong>Prazo para palpitar</strong>
-              <p className="rule-desc">17h00 horário da Suécia (CEST) no dia do jogo</p>
+              <p className="rule-desc">12h00 (horário de Brasília) no dia do jogo</p>
             </div>
           </div>
         </div>
