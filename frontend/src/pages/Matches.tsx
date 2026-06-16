@@ -17,14 +17,14 @@ function formatDay(dateStr: string): string {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
-    timeZone: 'Europe/Stockholm',
+    timeZone: 'America/Sao_Paulo',
   });
 }
 
 function groupByDay(matches: Match[]): [string, Match[]][] {
   const map = new Map<string, Match[]>();
   for (const m of matches) {
-    const key = new Date(m.matchDate).toLocaleDateString('sv-SE', { timeZone: 'Europe/Stockholm' });
+    const key = new Date(m.matchDate).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(m);
   }
@@ -58,7 +58,7 @@ export default function Matches() {
       <header className="page-header">
         <div>
           <h2 className="page-title">Jogos</h2>
-          <p className="page-subtitle">Prazo: 12h (horário de Brasília)</p>
+          <p className="page-subtitle">Prazo: 1h antes de cada jogo</p>
         </div>
       </header>
 

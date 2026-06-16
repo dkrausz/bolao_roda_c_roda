@@ -15,7 +15,7 @@ function formatTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Europe/Stockholm',
+    timeZone: 'America/Sao_Paulo',
   });
 }
 
