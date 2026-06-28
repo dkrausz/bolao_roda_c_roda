@@ -38,7 +38,7 @@ function formatDate(dateStr: string) {
 
 function pointsBadge(points: number | null) {
   if (points === null) return <span className="pred-points" style={{ color: 'var(--text-2)' }}>aguardando</span>;
-  if (points >= 6) return <span className="pred-points pred-points--exact">⭐ {points}pts</span>;
+  if (points >= 5) return <span className="pred-points pred-points--exact">⭐ {points}pts</span>;
   if (points > 0)  return <span className="pred-points pred-points--partial">✓ {points}pts</span>;
   return <span className="pred-points pred-points--miss">✗ 0pts</span>;
 }
@@ -61,7 +61,7 @@ export default function PlayerPredictions() {
   if (notFound || !data) return <div className="loading">Jogador não encontrado.</div>;
 
   const total = data.predictions.reduce((s, p) => s + (p.points ?? 0), 0);
-  const exact = data.predictions.filter((p) => p.points !== null && p.points >= 6).length;
+  const exact = data.predictions.filter((p) => p.points !== null && p.points >= 5).length;
 
   return (
     <div className="page">

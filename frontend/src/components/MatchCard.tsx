@@ -21,7 +21,7 @@ function formatTime(dateStr: string): string {
 
 function pointsLabel(points: number | null) {
   if (points === null) return null;
-  if (points >= 6) return { text: `⭐ ${points} pts`, cls: 'exact' };
+  if (points >= 5) return { text: `⭐ ${points} pts`, cls: 'exact' };
   if (points > 0)  return { text: `✓ ${points} pts`, cls: 'partial' };
   return { text: '✗ 0 pts', cls: 'miss' };
 }

@@ -19,8 +19,8 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       u.id,
       u.name,
       COALESCE(SUM(p.points), 0)::int                        AS total_points,
-      COUNT(CASE WHEN p.points = 6 THEN 1 END)::int          AS exact_scores,
-      COUNT(CASE WHEN p.points = 3 THEN 1 END)::int          AS correct_results,
+      COUNT(CASE WHEN p.points IN (5, 6) THEN 1 END)::int    AS exact_scores,
+      COUNT(CASE WHEN p.points IN (2, 3) THEN 1 END)::int   AS correct_results,
       COUNT(p.id)::int                                       AS total_predictions
     FROM users u
     LEFT JOIN predictions p ON p.user_id = u.id
