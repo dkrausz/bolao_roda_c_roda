@@ -5,9 +5,8 @@ const prisma = new PrismaClient();
 async function main() {
   const count = await prisma.team.count();
   if (count > 0) {
-    console.log('Banco já populado, pulando seed.');
-    return;
-  }
+    console.log('Times já existem, pulando seed de times/jogos.');
+  } else {
 
   console.log('Seeding times...');
 
@@ -258,8 +257,50 @@ async function main() {
   ];
 
   await prisma.match.createMany({ data: knockoutMatches });
+  console.log('Seed de times/jogos concluído!');
+  } // end if count === 0
 
-  console.log('Seed concluído!');
+  // Bracket link — roda sempre (idempotente)
+  console.log('Ligando chaveamento...');
+  const byPhase = async (phase: string) =>
+    prisma.match.findMany({ where: { phase: phase as Phase }, orderBy: { matchDate: 'asc' } });
+
+  const r32 = await byPhase('round_of_32');
+  const r16 = await byPhase('round_of_16');
+  const qf  = await byPhase('quarterfinal');
+  const sf  = await byPhase('semifinal');
+  const [bronze] = await byPhase('bronze');
+  const [final]  = await byPhase('final');
+
+  if (r32.length === 16 && r16.length === 8 && qf.length === 4 && sf.length === 2 && bronze && final) {
+    const ops: Promise<unknown>[] = [];
+    for (let i = 0; i < 8; i++) {
+      ops.push(
+        prisma.match.update({ where: { id: r32[i*2].id },   data: { nextMatchId: r16[i].id, nextMatchSlot: 'home' } }),
+        prisma.match.update({ where: { id: r32[i*2+1].id }, data: { nextMatchId: r16[i].id, nextMatchSlot: 'away' } }),
+      );
+    }
+    for (let i = 0; i < 4; i++) {
+      ops.push(
+        prisma.match.update({ where: { id: r16[i*2].id },   data: { nextMatchId: qf[i].id, nextMatchSlot: 'home' } }),
+        prisma.match.update({ where: { id: r16[i*2+1].id }, data: { nextMatchId: qf[i].id, nextMatchSlot: 'away' } }),
+      );
+    }
+    for (let i = 0; i < 2; i++) {
+      ops.push(
+        prisma.match.update({ where: { id: qf[i*2].id },   data: { nextMatchId: sf[i].id, nextMatchSlot: 'home' } }),
+        prisma.match.update({ where: { id: qf[i*2+1].id }, data: { nextMatchId: sf[i].id, nextMatchSlot: 'away' } }),
+      );
+    }
+    ops.push(
+      prisma.match.update({ where: { id: sf[0].id }, data: { nextMatchId: final.id, nextMatchSlot: 'home', loserMatchId: bronze.id, loserMatchSlot: 'home' } }),
+      prisma.match.update({ where: { id: sf[1].id }, data: { nextMatchId: final.id, nextMatchSlot: 'away', loserMatchId: bronze.id, loserMatchSlot: 'away' } }),
+    );
+    await Promise.all(ops);
+    console.log('Chaveamento ligado!');
+  } else {
+    console.log('Jogos insuficientes para ligar chaveamento.');
+  }
 }
 
 main()
