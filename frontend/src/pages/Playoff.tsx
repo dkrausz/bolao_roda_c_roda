@@ -95,7 +95,7 @@ export default function MataMata() {
   }, []);
 
   const phases: [string, keyof BracketData][] = [
-    ['1/16 avos de Final', 'round_of_32'],
+    ['16 avos de Final', 'round_of_32'],
     ['Oitavas de Final', 'round_of_16'],
     ['Quartas de Final', 'quarterfinal'],
     ['Semifinais', 'semifinal'],

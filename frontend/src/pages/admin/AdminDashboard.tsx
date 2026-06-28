@@ -29,7 +29,7 @@ interface TeamOption {
 
 const PHASE_LABELS: Record<string, string> = {
   group: 'Grupos',
-  round_of_32: '1/16 avos',
+  round_of_32: '16 avos',
   round_of_16: 'Oitavas',
   quarterfinal: 'Quartas',
   semifinal: 'Semifinal',
