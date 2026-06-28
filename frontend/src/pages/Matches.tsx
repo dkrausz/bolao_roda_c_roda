@@ -4,10 +4,10 @@ import { Match } from '../types';
 import MatchCard from '../components/MatchCard';
 
 const PHASE_LABELS: Record<string, string> = {
-  round_of_32: 'Oitavas de Final',
-  round_of_16: 'Quartas de Final',
-  quarterfinal: 'Semifinal',
-  semifinal: 'Final',
+  round_of_32: '1/16 avos de Final',
+  round_of_16: 'Oitavas de Final',
+  quarterfinal: 'Quartas de Final',
+  semifinal: 'Semifinal',
   bronze: '3º Lugar',
   final: 'Final',
 };
