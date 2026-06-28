@@ -104,7 +104,18 @@ router.put('/matches/:id/result', adminAuth, async (req: Request, res: Response)
     predictions.map((pred) =>
       prisma.prediction.update({
         where: { id: pred.id },
-        data: { points: calculatePoints(home_score, away_score, pred.homeScore, pred.awayScore) },
+        data: {
+          points: calculatePoints(
+            home_score,
+            away_score,
+            pred.homeScore,
+            pred.awayScore,
+            match.phase !== 'group' ? (match.penaltyWinnerId ?? null) : undefined,
+            match.phase !== 'group' ? (pred.penaltyWinnerId ?? null) : undefined,
+            match.homeTeamId,
+            match.awayTeamId,
+          ),
+        },
       })
     )
   );
