@@ -288,8 +288,8 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
 
   const handleSaveResult = async (id: number, _match: AdminMatch) => {
     const s = scores[id];
-    if (s.home === '' || s.away === '') return;
-    const isDraw = Number(s.home) === Number(s.away);
+    if (!s || s.home === '' || s.away === '') return;
+    const isDraw = s.home === s.away;
     const pw = penaltyWinners[id];
     if (isDraw && !pw) return; // require penalty winner for draws in knockout
     setSaving((p) => ({ ...p, [id]: true }));
@@ -441,24 +441,26 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
                   </div>
 
                   {/* Penalty winner selector — appears when scores are equal */}
-                  {s.home !== '' && s.away !== '' && Number(s.home) === Number(s.away) && (
+                  {s.home !== '' && s.away !== '' && s.home === s.away && match.homeTeamId && match.awayTeamId && (
                     <div className="penalty-selector">
                       <span className="penalty-label">Quem passou nos pênaltis?</span>
                       <div className="penalty-options">
-                        {[
-                          { id: match.homeTeamId, team: match.homeTeam },
-                          { id: match.awayTeamId, team: match.awayTeam },
-                        ].filter(o => o.team && o.id).map((opt) => (
-                          <button
-                            key={opt.id}
-                            className={`penalty-option ${penaltyWinners[match.id] === String(opt.id) ? 'penalty-option--active' : ''}`}
-                            onClick={() => setPenaltyWinners(p => ({ ...p, [match.id]: String(opt.id) }))}
-                            type="button"
-                          >
-                            <Flag code={opt.team!.flag} name={opt.team!.name} />
-                            {opt.team!.name}
-                          </button>
-                        ))}
+                        <button
+                          type="button"
+                          className={`penalty-option ${penaltyWinners[match.id] === String(match.homeTeamId) ? 'penalty-option--active' : ''}`}
+                          onClick={() => setPenaltyWinners(p => ({ ...p, [match.id]: String(match.homeTeamId) }))}
+                        >
+                          {match.homeTeam && <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />}
+                          {match.homeTeam?.name}
+                        </button>
+                        <button
+                          type="button"
+                          className={`penalty-option ${penaltyWinners[match.id] === String(match.awayTeamId) ? 'penalty-option--active' : ''}`}
+                          onClick={() => setPenaltyWinners(p => ({ ...p, [match.id]: String(match.awayTeamId) }))}
+                        >
+                          {match.awayTeam && <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />}
+                          {match.awayTeam?.name}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -466,7 +468,7 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
               )}
 
               {hasTeams && (() => {
-                const isDraw = s.home !== '' && s.away !== '' && Number(s.home) === Number(s.away);
+                const isDraw = s.home !== '' && s.away !== '' && s.home === s.away;
                 const canSave = s.home !== '' && s.away !== '' && (!isDraw || !!penaltyWinners[match.id]);
                 return (
                   <button
