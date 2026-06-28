@@ -531,6 +531,14 @@ html, body {
   margin-top: 3px;
 }
 
+.rule-item--highlight {
+  background: var(--surface2);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+}
+
 .btn-recover {
   width: 100%;
   padding: 12px;

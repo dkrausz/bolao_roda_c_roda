@@ -20,8 +20,8 @@ function formatTime(dateStr: string): string {
 }
 
 function pointsLabel(points: number | null) {
-  if (points === 5) return { text: '⭐ 5 pts', cls: 'exact' };
-  if (points === 2) return { text: '✓ 2 pts', cls: 'partial' };
+  if (points === 6) return { text: '⭐ 6 pts', cls: 'exact' };
+  if (points === 3) return { text: '✓ 3 pts', cls: 'partial' };
   if (points === 0) return { text: '✗ 0 pts', cls: 'miss' };
   return null;
 }
