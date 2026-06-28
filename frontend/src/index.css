@@ -38,8 +38,6 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 540px;
-  margin: 0 auto;
 }
 
 .page {
@@ -356,7 +354,7 @@ html, body {
   min-width: 0;
 }
 
-.team--away { align-items: flex-end; text-align: right; }
+.team--away { align-items: flex-end; }
 
 .team-flag-img {
   width: 40px !important;
@@ -373,7 +371,7 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  max-width: 90px;
 }
 
 .match-center {
