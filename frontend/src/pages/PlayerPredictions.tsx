@@ -64,13 +64,12 @@ export default function PlayerPredictions() {
   if (loading) return <div className="loading">Carregando...</div>;
   if (notFound || !data) return <div className="loading">Jogador não encontrado.</div>;
 
-  const now = new Date();
   const total = data.predictions.reduce((s, p) => s + (p.points ?? 0), 0);
   const exact = data.predictions.filter((p) => p.points !== null && p.points >= 5).length;
 
   const filtered = data.predictions.filter((p) => {
-    const isPast = new Date(p.match.matchDate) < now;
-    return filter === 'past' ? isPast : !isPast;
+    const hasResult = p.match.homeScore !== null;
+    return filter === 'past' ? hasResult : !hasResult;
   });
 
   const KNOCKOUT_PHASES = new Set(['round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final']);
