@@ -11,21 +11,33 @@ interface AdminMatch {
   matchDate: string;
   phase: string;
   groupLetter: string | null;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
   homeScore: number | null;
   awayScore: number | null;
+  penaltyWinnerId: number | null;
   homeTeam: { name: string; flag: string } | null;
   awayTeam: { name: string; flag: string } | null;
 }
 
+interface TeamOption {
+  id: number;
+  name: string;
+  flag: string;
+  groupLetter: string;
+}
+
 const PHASE_LABELS: Record<string, string> = {
   group: 'Grupos',
-  round_of_32: 'Oitavas',
-  round_of_16: 'Quartas',
-  quarterfinal: 'Semifinal',
-  semifinal: 'Final',
+  round_of_32: '1/16 avos',
+  round_of_16: 'Oitavas',
+  quarterfinal: 'Quartas',
+  semifinal: 'Semifinal',
   bronze: '3º Lugar',
   final: 'Final',
 };
+
+const KNOCKOUT_PHASES = ['round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final'];
 
 function Flag({ code, name }: { code: string; name: string }) {
   return <span className={`fi fi-${code} match-flag`} title={name} />;
@@ -104,9 +116,11 @@ function UpdateResults({ credentials }: { credentials: string }) {
 
   const fetchMatches = useCallback(() => {
     adminApi(credentials).get<AdminMatch[]>('/api/admin/matches').then((r) => {
-      setMatches(r.data);
+      // Only group matches in this tab
+      const groupMatches = r.data.filter((m) => m.phase === 'group');
+      setMatches(groupMatches);
       const initial: Record<number, { home: string; away: string }> = {};
-      r.data.forEach((m) => {
+      groupMatches.forEach((m) => {
         initial[m.id] = {
           home: m.homeScore !== null ? String(m.homeScore) : '',
           away: m.awayScore !== null ? String(m.awayScore) : '',
@@ -144,7 +158,7 @@ function UpdateResults({ credentials }: { credentials: string }) {
   return (
     <div className="admin-section">
       <div className="admin-section-header">
-        <h3 className="admin-section-title">Resultados</h3>
+        <h3 className="admin-section-title">Resultados — Grupos</h3>
         <div className="filter-tabs">
           {(['all', 'pending', 'done'] as const).map((f) => (
             <button key={f} className={`filter-tab ${filter === f ? 'filter-tab--active' : ''}`} onClick={() => setFilter(f)}>
@@ -216,9 +230,275 @@ function UpdateResults({ credentials }: { credentials: string }) {
   );
 }
 
+// ─── Sub-componente por jogo do mata-mata ────────────────────────
+interface KnockoutRowProps {
+  match: AdminMatch;
+  teams: TeamOption[];
+  credentials: string;
+  onRefresh: () => void;
+}
+
+function KnockoutRow({ match, teams, credentials, onRefresh }: KnockoutRowProps) {
+  const [homeScore, setHomeScore] = useState(match.homeScore !== null ? String(match.homeScore) : '');
+  const [awayScore, setAwayScore] = useState(match.awayScore !== null ? String(match.awayScore) : '');
+  const [penaltyWinner, setPenaltyWinner] = useState('');
+  const [homeTeamSel, setHomeTeamSel] = useState('');
+  const [awayTeamSel, setAwayTeamSel] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState('');
+
+  const hasTeams = !!(match.homeTeam && match.awayTeam);
+  const hasResult = match.homeScore !== null;
+  const isDraw = homeScore !== '' && awayScore !== '' && homeScore === awayScore;
+
+  const teamsByGroup = teams.reduce<Record<string, TeamOption[]>>((acc, t) => {
+    (acc[t.groupLetter] ??= []).push(t);
+    return acc;
+  }, {});
+
+  const handleSaveTeams = async () => {
+    if (!homeTeamSel && !awayTeamSel) return;
+    setSaving(true);
+    try {
+      await adminApi(credentials).put(`/api/admin/matches/${match.id}/teams`, {
+        ...(homeTeamSel && { home_team_id: Number(homeTeamSel) }),
+        ...(awayTeamSel && { away_team_id: Number(awayTeamSel) }),
+      });
+      setSaved('teams');
+      setTimeout(() => setSaved(''), 2000);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveResult = async () => {
+    if (homeScore === '' || awayScore === '') return;
+    if (isDraw && !penaltyWinner) return;
+    setSaving(true);
+    try {
+      await adminApi(credentials).put(`/api/admin/matches/${match.id}/result`, {
+        home_score: Number(homeScore),
+        away_score: Number(awayScore),
+        ...(isDraw && penaltyWinner && { penalty_winner_id: Number(penaltyWinner) }),
+      });
+      setSaved('result');
+      setTimeout(() => setSaved(''), 2000);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className={`result-row ${hasResult ? 'result-row--done' : ''}`}>
+      <div className="result-meta">
+        <span className="result-date">{formatDate(match.matchDate)}</span>
+        <span className="result-phase">{PHASE_LABELS[match.phase]}</span>
+      </div>
+
+      {/* Team assignment — shown when teams missing */}
+      {!hasTeams && (
+        <div className="playoff-team-assign">
+          <div className="playoff-team-row">
+            <label className="field-label">Mandante</label>
+            {match.homeTeam ? (
+              <span className="playoff-team-set">
+                <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />
+                {match.homeTeam.name}
+              </span>
+            ) : (
+              <select
+                className="field-input field-input--select"
+                value={homeTeamSel}
+                onChange={(e) => setHomeTeamSel(e.target.value)}
+              >
+                <option value="">— selecionar time —</option>
+                {Object.entries(teamsByGroup).sort().map(([grp, ts]) => (
+                  <optgroup key={grp} label={`Grupo ${grp}`}>
+                    {ts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            )}
+          </div>
+          <div className="playoff-team-row">
+            <label className="field-label">Visitante</label>
+            {match.awayTeam ? (
+              <span className="playoff-team-set">
+                <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />
+                {match.awayTeam.name}
+              </span>
+            ) : (
+              <select
+                className="field-input field-input--select"
+                value={awayTeamSel}
+                onChange={(e) => setAwayTeamSel(e.target.value)}
+              >
+                <option value="">— selecionar time —</option>
+                {Object.entries(teamsByGroup).sort().map(([grp, ts]) => (
+                  <optgroup key={grp} label={`Grupo ${grp}`}>
+                    {ts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            )}
+          </div>
+          {(!match.homeTeam || !match.awayTeam) && (
+            <button
+              className={`btn-save ${saved === 'teams' ? 'btn-save--saved' : ''}`}
+              onClick={handleSaveTeams}
+              disabled={saving || (!homeTeamSel && !match.homeTeam) || (!awayTeamSel && !match.awayTeam)}
+            >
+              {saved === 'teams' ? 'Salvo ✓' : saving ? 'Salvando...' : 'Definir Times'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Score inputs — shown when teams are set */}
+      {hasTeams && (
+        <>
+          <div className="result-teams">
+            <div className="result-team">
+              {match.homeTeam && <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />}
+              <span>{match.homeTeam?.name ?? '—'}</span>
+            </div>
+
+            <div className="result-score-inputs">
+              <input
+                className="score-input"
+                type="text"
+                inputMode="numeric"
+                maxLength={2}
+                value={homeScore}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, '');
+                  setHomeScore(v);
+                  if (v !== awayScore) setPenaltyWinner('');
+                }}
+                placeholder="—"
+              />
+              <span className="score-sep">×</span>
+              <input
+                className="score-input"
+                type="text"
+                inputMode="numeric"
+                maxLength={2}
+                value={awayScore}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, '');
+                  setAwayScore(v);
+                  if (homeScore !== v) setPenaltyWinner('');
+                }}
+                placeholder="—"
+              />
+            </div>
+
+            <div className="result-team result-team--away">
+              {match.awayTeam && <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />}
+              <span>{match.awayTeam?.name ?? '—'}</span>
+            </div>
+          </div>
+
+          {/* Penalty winner — só aparece quando placar está empatado */}
+          {isDraw && (
+            <div className="penalty-selector">
+              <span className="penalty-label">Quem passou nos pênaltis?</span>
+              <div className="penalty-options">
+                <button
+                  type="button"
+                  className={`penalty-option${penaltyWinner === String(match.homeTeamId) ? ' penalty-option--active' : ''}`}
+                  onClick={() => setPenaltyWinner(String(match.homeTeamId))}
+                >
+                  {match.homeTeam && <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />}
+                  <span>{match.homeTeam?.name}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`penalty-option${penaltyWinner === String(match.awayTeamId) ? ' penalty-option--active' : ''}`}
+                  onClick={() => setPenaltyWinner(String(match.awayTeamId))}
+                >
+                  {match.awayTeam && <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />}
+                  <span>{match.awayTeam?.name}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button
+            className={`btn-save ${saved === 'result' ? 'btn-save--saved' : ''}`}
+            onClick={handleSaveResult}
+            disabled={saving || homeScore === '' || awayScore === '' || (isDraw && !penaltyWinner)}
+          >
+            {saved === 'result' ? 'Salvo ✓' : saving ? 'Salvando...' : 'Salvar'}
+          </button>
+        </>
+      )}
+
+      {hasResult && (
+        <p className="playoff-advance-note">Próximo jogo atualizado automaticamente</p>
+      )}
+    </div>
+  );
+}
+
+// ─── Playoffs: atribuir times + resultados ─────────────────────────
+function PlayoffAdmin({ credentials }: { credentials: string }) {
+  const [matches, setMatches] = useState<AdminMatch[]>([]);
+  const [teams, setTeams] = useState<TeamOption[]>([]);
+  const [phaseFilter, setPhaseFilter] = useState<string>('round_of_32');
+
+  const fetchAll = useCallback(() => {
+    Promise.all([
+      adminApi(credentials).get<AdminMatch[]>('/api/admin/matches'),
+      adminApi(credentials).get<TeamOption[]>('/api/admin/teams'),
+    ]).then(([matchRes, teamRes]) => {
+      setMatches(matchRes.data.filter((m) => KNOCKOUT_PHASES.includes(m.phase)));
+      setTeams(teamRes.data);
+    });
+  }, [credentials]);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const phaseMatches = matches.filter((m) => m.phase === phaseFilter);
+
+  return (
+    <div className="admin-section">
+      <div className="admin-section-header">
+        <h3 className="admin-section-title">Mata-Mata</h3>
+      </div>
+
+      <div className="filter-tabs" style={{ marginBottom: 16 }}>
+        {KNOCKOUT_PHASES.map((p) => (
+          <button
+            key={p}
+            className={`filter-tab ${phaseFilter === p ? 'filter-tab--active' : ''}`}
+            onClick={() => setPhaseFilter(p)}
+          >
+            {PHASE_LABELS[p]}
+          </button>
+        ))}
+      </div>
+
+      <div className="results-list">
+        {phaseMatches.map((match) => (
+          <KnockoutRow
+            key={match.id}
+            match={match}
+            teams={teams}
+            credentials={credentials}
+            onRefresh={fetchAll}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Dashboard principal ──────────────────────────────────────────
 export default function AdminDashboard({ credentials, onLogout }: Props) {
-  const [tab, setTab] = useState<'users' | 'results'>('results');
+  const [tab, setTab] = useState<'users' | 'results' | 'playoff'>('results');
 
   const handleLogout = () => {
     clearAdminCredentials();
@@ -237,18 +517,19 @@ export default function AdminDashboard({ credentials, onLogout }: Props) {
 
       <div className="admin-tabs">
         <button className={`admin-tab ${tab === 'results' ? 'admin-tab--active' : ''}`} onClick={() => setTab('results')}>
-          ⚽ Resultados
+          ⚽ Grupos
+        </button>
+        <button className={`admin-tab ${tab === 'playoff' ? 'admin-tab--active' : ''}`} onClick={() => setTab('playoff')}>
+          🥊 Mata-Mata
         </button>
         <button className={`admin-tab ${tab === 'users' ? 'admin-tab--active' : ''}`} onClick={() => setTab('users')}>
           👤 Usuários
         </button>
       </div>
 
-      {tab === 'results' ? (
-        <UpdateResults credentials={credentials} />
-      ) : (
-        <RegisterUser credentials={credentials} />
-      )}
+      {tab === 'results' && <UpdateResults credentials={credentials} />}
+      {tab === 'playoff' && <PlayoffAdmin credentials={credentials} />}
+      {tab === 'users' && <RegisterUser credentials={credentials} />}
     </div>
   );
 }

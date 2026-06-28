@@ -531,6 +531,14 @@ html, body {
   margin-top: 3px;
 }
 
+.rule-item--highlight {
+  background: var(--surface2);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+}
+
 .btn-recover {
   width: 100%;
   padding: 12px;
@@ -697,7 +705,14 @@ html, body {
 
 .admin-form { display: flex; flex-direction: column; gap: 14px; max-width: 480px; }
 
-.filter-tabs { display: flex; gap: 6px; }
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 12px;
+  scrollbar-width: none;
+}
+.filter-tabs::-webkit-scrollbar { display: none; }
 
 .filter-tab {
   padding: 5px 10px;
@@ -771,7 +786,7 @@ html, body {
   text-overflow: ellipsis;
 }
 
-.result-team--away { justify-content: flex-end; flex-direction: row-reverse; }
+.result-team--away { justify-content: flex-start; flex-direction: row-reverse; }
 
 .result-score-inputs {
   display: flex;
@@ -862,4 +877,192 @@ html, body {
   color: var(--text-2);
   padding: 32px 16px;
   font-size: 0.9rem;
+}
+
+/* ============================================================
+   BRACKET / PLAYOFF PAGE
+   ============================================================ */
+.page--bracket .page-header {
+  align-items: flex-start;
+}
+
+.bracket-refresh-hint {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  padding-top: 4px;
+}
+
+.bracket-container {
+  padding: 12px 0;
+}
+
+.bracket-phase {
+  margin-bottom: 8px;
+}
+
+.bracket-phase-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bracket-phase-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.bracket-tile {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bracket-tile--done {
+  border-left: 3px solid var(--primary);
+}
+
+.bracket-date {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.95rem;
+}
+
+.bracket-team--winner .bracket-team-name {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.bracket-team--tbd .bracket-team-name,
+.bracket-team-name.bracket-team--tbd {
+  color: var(--text-2);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.bracket-score {
+  margin-left: auto;
+  font-size: 1.1rem;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: right;
+}
+
+.bracket-team-name {
+  flex: 1;
+}
+
+.loading-state {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+/* ============================================================
+   ADMIN PLAYOFF
+   ============================================================ */
+.playoff-team-assign {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.playoff-team-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.playoff-team-row .field-label {
+  min-width: 80px;
+  font-size: 0.8rem;
+}
+
+.playoff-team-set {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--primary);
+}
+
+.field-input--select {
+  flex: 1;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.playoff-advance-note {
+  font-size: 0.75rem;
+  color: var(--primary);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Penalty selector in admin */
+.penalty-selector {
+  margin: 8px 0 4px;
+}
+
+.penalty-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.penalty-options {
+  display: flex;
+  gap: 8px;
+}
+
+.penalty-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.penalty-option--active {
+  border-color: var(--primary);
+  background: rgba(0, 176, 80, 0.15);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Penalty note in bracket tile */
+.bracket-penalty-note {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  font-style: italic;
+  margin-top: 4px;
+  padding-left: 2px;
 }

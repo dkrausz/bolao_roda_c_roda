@@ -8,6 +8,7 @@ import predictionsRouter from './routes/predictions';
 import rankingRouter from './routes/ranking';
 import adminRouter from './routes/admin';
 import usersRouter from './routes/users';
+import bracketRouter from './routes/bracket';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/api/predictions', predictionsRouter);
 app.use('/api/ranking', rankingRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/bracket', bracketRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

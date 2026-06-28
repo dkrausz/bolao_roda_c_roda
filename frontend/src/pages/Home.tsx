@@ -87,28 +87,37 @@ export default function Home({ auth, onLogout }: Props) {
 
       {/* Regras */}
       <section className="rules-section">
-        <h3 className="rules-title">📋 Regras</h3>
+        <h3 className="rules-title">📋 Pontuação</h3>
         <div className="rules-list">
           <div className="rule-item">
-            <span className="rule-icon">⭐</span>
+            <span className="rule-icon">🎯</span>
             <div>
               <strong>Placar exato</strong>
-              <span className="rule-pts">5 pontos</span>
+              <p className="rule-desc">Acertou o placar certinho</p>
+              <span className="rule-pts">+3 pontos</span>
             </div>
           </div>
           <div className="rule-item">
             <span className="rule-icon">✓</span>
             <div>
-              <strong>Resultado correto</strong>
-              <p className="rule-desc">Acertou o vencedor ou que seria empate (mas não o placar)</p>
-              <span className="rule-pts">2 pontos</span>
+              <strong>Vencedor correto</strong>
+              <p className="rule-desc">Acertou quem vence (ou que seria empate)</p>
+              <span className="rule-pts">+3 pontos</span>
+            </div>
+          </div>
+          <div className="rule-item rule-item--highlight">
+            <span className="rule-icon">⭐</span>
+            <div>
+              <strong>Placar exato + vencedor</strong>
+              <p className="rule-desc">As duas coisas certas ao mesmo tempo</p>
+              <span className="rule-pts">6 pontos</span>
             </div>
           </div>
           <div className="rule-item">
-            <span className="rule-icon">✗</span>
+            <span className="rule-icon">🥊</span>
             <div>
-              <strong>Errou</strong>
-              <span className="rule-pts">0 pontos</span>
+              <strong>Mata-Mata — pênaltis</strong>
+              <p className="rule-desc">Em empates, escolha quem passa. Acertar o vencedor vale +3</p>
             </div>
           </div>
           <div className="rule-item">

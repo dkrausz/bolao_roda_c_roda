@@ -22,6 +22,7 @@ export interface Match {
   awayScore: number | null;
   predHome: number | null;
   predAway: number | null;
+  predPenaltyWinnerId: number | null;
   predPoints: number | null;
   isOpen: boolean;
 }
@@ -38,4 +39,31 @@ export interface RankingEntry {
 export interface AuthState {
   token: string;
   user: { id: number; name: string };
+}
+
+export interface BracketMatch {
+  id: number;
+  matchDate: string | null;
+  phase: Phase;
+  homeTeamId: number | null;
+  homeScore: number | null;
+  awayTeamId: number | null;
+  awayScore: number | null;
+  penaltyWinnerId: number | null;
+  homeTeam: { name: string; flag: string } | null;
+  awayTeam: { name: string; flag: string } | null;
+  penaltyWinner: { name: string; flag: string } | null;
+  nextMatchId: number | null;
+  nextMatchSlot: string | null;
+  loserMatchId: number | null;
+  loserMatchSlot: string | null;
+}
+
+export interface BracketData {
+  round_of_32: BracketMatch[];
+  round_of_16: BracketMatch[];
+  quarterfinal: BracketMatch[];
+  semifinal: BracketMatch[];
+  bronze: BracketMatch[];
+  final: BracketMatch[];
 }

@@ -15,7 +15,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
       awayTeam: { select: { id: true, name: true, flag: true } },
       predictions: {
         where: { userId },
-        select: { homeScore: true, awayScore: true, points: true },
+        select: { homeScore: true, awayScore: true, points: true, penaltyWinnerId: true },
       },
     },
     orderBy: { matchDate: 'asc' },
@@ -38,6 +38,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
       awayScore: m.awayScore,
       predHome: pred?.homeScore ?? null,
       predAway: pred?.awayScore ?? null,
+      predPenaltyWinnerId: pred?.penaltyWinnerId ?? null,
       predPoints: pred?.points ?? null,
       isOpen: isMatchOpen(m.matchDate!),
     };

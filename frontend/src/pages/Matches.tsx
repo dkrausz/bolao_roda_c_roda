@@ -4,13 +4,16 @@ import { Match } from '../types';
 import MatchCard from '../components/MatchCard';
 
 const PHASE_LABELS: Record<string, string> = {
-  round_of_32: 'Oitavas de Final',
-  round_of_16: 'Quartas de Final',
-  quarterfinal: 'Semifinal',
-  semifinal: 'Final',
-  bronze: '3º Lugar',
-  final: 'Final',
+  group:       'Grupos',
+  round_of_32: '1/16 avos',
+  round_of_16: 'Oitavas',
+  quarterfinal: 'Quartas',
+  semifinal:   'Semifinal',
+  bronze:      '3º Lugar',
+  final:       'Final',
 };
+
+const PHASE_ORDER = ['group', 'round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final'];
 
 function formatDay(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -34,6 +37,7 @@ function groupByDay(matches: Match[]): [string, Match[]][] {
 export default function Matches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [phaseFilter, setPhaseFilter] = useState<string>('group');
 
   const fetchMatches = useCallback(() => {
     api
@@ -44,14 +48,23 @@ export default function Matches() {
 
   useEffect(() => { fetchMatches(); }, [fetchMatches]);
 
-  const handleSave = async (matchId: number, home: number, away: number) => {
-    await api.post('/api/predictions', { match_id: matchId, home_score: home, away_score: away });
+  const handleSave = async (matchId: number, home: number, away: number, penaltyWinnerId?: number) => {
+    await api.post('/api/predictions', {
+      match_id: matchId,
+      home_score: home,
+      away_score: away,
+      ...(penaltyWinnerId && { penalty_winner_id: penaltyWinnerId }),
+    });
     fetchMatches();
   };
 
-  if (loading) return <div className="loading">Carregando jogos...</div>;
+  // só mostrar abas de fases que existem nos dados
+  const availablePhases = PHASE_ORDER.filter((p) => matches.some((m) => m.phase === p));
 
-  const grouped = groupByDay(matches);
+  const filtered = matches.filter((m) => m.phase === phaseFilter);
+  const grouped = groupByDay(filtered);
+
+  if (loading) return <div className="loading">Carregando jogos...</div>;
 
   return (
     <div className="page">
@@ -61,6 +74,18 @@ export default function Matches() {
           <p className="page-subtitle">Prazo: 1h antes de cada jogo</p>
         </div>
       </header>
+
+      <div className="filter-tabs">
+        {availablePhases.map((p) => (
+          <button
+            key={p}
+            className={`filter-tab ${phaseFilter === p ? 'filter-tab--active' : ''}`}
+            onClick={() => setPhaseFilter(p)}
+          >
+            {PHASE_LABELS[p]}
+          </button>
+        ))}
+      </div>
 
       {grouped.map(([dateKey, dayMatches]) => {
         const first = dayMatches[0];
