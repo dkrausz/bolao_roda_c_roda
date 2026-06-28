@@ -72,6 +72,17 @@ router.put('/matches/:id/result', adminAuth, async (req: Request, res: Response)
     penalty_winner_id?: number | null;
   };
 
+  // Allow null to clear a result
+  if (home_score === null && away_score === null) {
+    await prisma.match.update({
+      where: { id: matchId },
+      data: { homeScore: null, awayScore: null, penaltyWinnerId: null },
+    });
+    await prisma.prediction.updateMany({ where: { matchId }, data: { points: null } });
+    res.json({ ok: true });
+    return;
+  }
+
   if (home_score === undefined || away_score === undefined) {
     res.status(400).json({ error: 'home_score e away_score são obrigatórios' });
     return;

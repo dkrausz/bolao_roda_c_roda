@@ -149,6 +149,19 @@ function UpdateResults({ credentials }: { credentials: string }) {
     }
   };
 
+  const handleClear = async (id: number) => {
+    setSaving((p) => ({ ...p, [id]: true }));
+    try {
+      await adminApi(credentials).put(`/api/admin/matches/${id}/result`, {
+        home_score: null,
+        away_score: null,
+      });
+      fetchMatches();
+    } finally {
+      setSaving((p) => ({ ...p, [id]: false }));
+    }
+  };
+
   const filtered = matches.filter((m) => {
     if (filter === 'pending') return m.homeScore === null;
     if (filter === 'done') return m.homeScore !== null;
@@ -215,13 +228,25 @@ function UpdateResults({ credentials }: { credentials: string }) {
                 </div>
               </div>
 
-              <button
-                className={`btn-save ${isSaved ? 'btn-save--saved' : ''}`}
-                onClick={() => handleSave(match.id)}
-                disabled={isSaving || s.home === '' || s.away === ''}
-              >
-                {isSaved ? 'Salvo ✓' : isSaving ? 'Salvando...' : 'Salvar'}
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  className={`btn-save ${isSaved ? 'btn-save--saved' : ''}`}
+                  onClick={() => handleSave(match.id)}
+                  disabled={isSaving || s.home === '' || s.away === ''}
+                >
+                  {isSaved ? 'Salvo ✓' : isSaving ? 'Salvando...' : 'Salvar'}
+                </button>
+                {hasResult && (
+                  <button
+                    className="btn-save"
+                    style={{ background: 'var(--danger, #e53e3e)' }}
+                    onClick={() => handleClear(match.id)}
+                    disabled={isSaving}
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
@@ -241,7 +266,7 @@ interface KnockoutRowProps {
 function KnockoutRow({ match, teams, credentials, onRefresh }: KnockoutRowProps) {
   const [homeScore, setHomeScore] = useState(match.homeScore !== null ? String(match.homeScore) : '');
   const [awayScore, setAwayScore] = useState(match.awayScore !== null ? String(match.awayScore) : '');
-  const [penaltyWinner, setPenaltyWinner] = useState('');
+  const [penaltyWinner, setPenaltyWinner] = useState(match.penaltyWinnerId ? String(match.penaltyWinnerId) : '');
   const [homeTeamSel, setHomeTeamSel] = useState('');
   const [awayTeamSel, setAwayTeamSel] = useState('');
   const [saving, setSaving] = useState(false);
@@ -283,6 +308,24 @@ function KnockoutRow({ match, teams, credentials, onRefresh }: KnockoutRowProps)
         ...(isDraw && penaltyWinner && { penalty_winner_id: Number(penaltyWinner) }),
       });
       setSaved('result');
+      setTimeout(() => setSaved(''), 2000);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClearResult = async () => {
+    setSaving(true);
+    try {
+      await adminApi(credentials).put(`/api/admin/matches/${match.id}/result`, {
+        home_score: null,
+        away_score: null,
+      });
+      setHomeScore('');
+      setAwayScore('');
+      setPenaltyWinner('');
+      setSaved('cleared');
       setTimeout(() => setSaved(''), 2000);
       onRefresh();
     } finally {
@@ -426,13 +469,25 @@ function KnockoutRow({ match, teams, credentials, onRefresh }: KnockoutRowProps)
             </div>
           )}
 
-          <button
-            className={`btn-save ${saved === 'result' ? 'btn-save--saved' : ''}`}
-            onClick={handleSaveResult}
-            disabled={saving || homeScore === '' || awayScore === '' || (isDraw && !penaltyWinner)}
-          >
-            {saved === 'result' ? 'Salvo ✓' : saving ? 'Salvando...' : 'Salvar'}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className={`btn-save ${saved === 'result' ? 'btn-save--saved' : ''}`}
+              onClick={handleSaveResult}
+              disabled={saving || homeScore === '' || awayScore === '' || (isDraw && !penaltyWinner)}
+            >
+              {saved === 'result' ? 'Salvo ✓' : saving ? 'Salvando...' : 'Salvar'}
+            </button>
+            {hasResult && (
+              <button
+                className="btn-save"
+                style={{ background: 'var(--danger, #e53e3e)' }}
+                onClick={handleClearResult}
+                disabled={saving}
+              >
+                {saved === 'cleared' ? 'Limpo ✓' : 'Limpar'}
+              </button>
+            )}
+          </div>
         </>
       )}
 
