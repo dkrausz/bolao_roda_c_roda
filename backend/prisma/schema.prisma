@@ -33,8 +33,9 @@ model Team {
   name        String
   flag        String
   groupLetter String  @map("group_letter")
-  homeMatches Match[] @relation("HomeTeam")
-  awayMatches Match[] @relation("AwayTeam")
+  homeMatches           Match[] @relation("HomeTeam")
+  awayMatches           Match[] @relation("AwayTeam")
+  penaltyWonMatches     Match[] @relation("PenaltyWinner")
 
   @@map("teams")
 }
@@ -50,13 +51,15 @@ model Match {
   awayScore       Int?         @map("away_score")
   createdAt       DateTime     @default(now()) @map("created_at")
   // Playoff bracket wiring
-  nextMatchId     Int?         @map("next_match_id")
-  nextMatchSlot   String?      @map("next_match_slot")   // 'home' | 'away'
-  loserMatchId    Int?         @map("loser_match_id")    // only SF → bronze
-  loserMatchSlot  String?      @map("loser_match_slot")  // 'home' | 'away'
+  nextMatchId       Int?         @map("next_match_id")
+  nextMatchSlot     String?      @map("next_match_slot")   // 'home' | 'away'
+  loserMatchId      Int?         @map("loser_match_id")    // only SF → bronze
+  loserMatchSlot    String?      @map("loser_match_slot")  // 'home' | 'away'
+  penaltyWinnerId   Int?         @map("penalty_winner_id") // team that won on penalties (draw matches only)
 
-  homeTeam        Team?        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeTeam          Team?        @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeam        Team?        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  penaltyWinner   Team?        @relation("PenaltyWinner", fields: [penaltyWinnerId], references: [id])
   nextMatch       Match?       @relation("WinnerFlow", fields: [nextMatchId], references: [id])
   prevWinnerMatches Match[]    @relation("WinnerFlow")
   loserMatch      Match?       @relation("LoserFlow", fields: [loserMatchId], references: [id])

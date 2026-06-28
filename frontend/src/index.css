@@ -1003,3 +1003,51 @@ html, body {
   margin-top: 6px;
   font-style: italic;
 }
+
+/* Penalty selector in admin */
+.penalty-selector {
+  margin: 8px 0 4px;
+}
+
+.penalty-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.penalty-options {
+  display: flex;
+  gap: 8px;
+}
+
+.penalty-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.penalty-option--active {
+  border-color: var(--primary);
+  background: rgba(0, 176, 80, 0.15);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Penalty note in bracket tile */
+.bracket-penalty-note {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  font-style: italic;
+  margin-top: 4px;
+  padding-left: 2px;
+}

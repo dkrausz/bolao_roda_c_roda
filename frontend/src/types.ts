@@ -48,8 +48,10 @@ export interface BracketMatch {
   homeScore: number | null;
   awayTeamId: number | null;
   awayScore: number | null;
+  penaltyWinnerId: number | null;
   homeTeam: { name: string; flag: string } | null;
   awayTeam: { name: string; flag: string } | null;
+  penaltyWinner: { name: string; flag: string } | null;
   nextMatchId: number | null;
   nextMatchSlot: string | null;
   loserMatchId: number | null;

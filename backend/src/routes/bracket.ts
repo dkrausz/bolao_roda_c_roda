@@ -11,6 +11,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     include: {
       homeTeam: { select: { name: true, flag: true } },
       awayTeam: { select: { name: true, flag: true } },
+      penaltyWinner: { select: { name: true, flag: true } },
     },
     orderBy: { matchDate: 'asc' },
   });

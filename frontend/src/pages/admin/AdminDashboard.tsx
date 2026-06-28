@@ -13,6 +13,7 @@ interface AdminMatch {
   groupLetter: string | null;
   homeScore: number | null;
   awayScore: number | null;
+  penaltyWinnerId: number | null;
   homeTeam: { name: string; flag: string } | null;
   awayTeam: { name: string; flag: string } | null;
 }
@@ -232,6 +233,7 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [scores, setScores] = useState<Record<number, { home: string; away: string }>>({});
+  const [penaltyWinners, setPenaltyWinners] = useState<Record<number, string>>({});
   const [teamSelects, setTeamSelects] = useState<Record<number, { home: string; away: string }>>({});
   const [saving, setSaving] = useState<Record<number, boolean>>({});
   const [saved, setSaved] = useState<Record<number, string>>({});
@@ -282,14 +284,18 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
     }
   };
 
-  const handleSaveResult = async (id: number) => {
+  const handleSaveResult = async (id: number, _match: AdminMatch) => {
     const s = scores[id];
     if (s.home === '' || s.away === '') return;
+    const isDraw = Number(s.home) === Number(s.away);
+    const pw = penaltyWinners[id];
+    if (isDraw && !pw) return; // require penalty winner for draws in knockout
     setSaving((p) => ({ ...p, [id]: true }));
     try {
       await adminApi(credentials).put(`/api/admin/matches/${id}/result`, {
         home_score: Number(s.home),
         away_score: Number(s.away),
+        ...(isDraw && { penalty_winner_id: Number(pw) }),
       });
       setSaved((p) => ({ ...p, [id]: 'result' }));
       setTimeout(() => setSaved((p) => ({ ...p, [id]: '' })), 2000);
@@ -401,46 +407,75 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
 
               {/* Score inputs — shown when teams are set */}
               {hasTeams && (
-                <div className="result-teams">
-                  <div className="result-team">
-                    {match.homeTeam && <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />}
-                    <span>{match.homeTeam?.name ?? '—'}</span>
+                <>
+                  <div className="result-teams">
+                    <div className="result-team">
+                      {match.homeTeam && <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />}
+                      <span>{match.homeTeam?.name ?? '—'}</span>
+                    </div>
+
+                    <div className="result-score-inputs">
+                      <input
+                        className="score-input"
+                        type="number" inputMode="numeric" min={0} max={99}
+                        value={s.home}
+                        onChange={(e) => setScores((p) => ({ ...p, [match.id]: { ...p[match.id], home: e.target.value.replace(/\D/g, '') } }))}
+                        placeholder={hasResult ? String(match.homeScore) : '—'}
+                      />
+                      <span className="score-sep">×</span>
+                      <input
+                        className="score-input"
+                        type="number" inputMode="numeric" min={0} max={99}
+                        value={s.away}
+                        onChange={(e) => setScores((p) => ({ ...p, [match.id]: { ...p[match.id], away: e.target.value.replace(/\D/g, '') } }))}
+                        placeholder={hasResult ? String(match.awayScore) : '—'}
+                      />
+                    </div>
+
+                    <div className="result-team result-team--away">
+                      {match.awayTeam && <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />}
+                      <span>{match.awayTeam?.name ?? '—'}</span>
+                    </div>
                   </div>
 
-                  <div className="result-score-inputs">
-                    <input
-                      className="score-input"
-                      type="number" inputMode="numeric" min={0} max={99}
-                      value={s.home}
-                      onChange={(e) => setScores((p) => ({ ...p, [match.id]: { ...p[match.id], home: e.target.value.replace(/\D/g, '') } }))}
-                      placeholder={hasResult ? String(match.homeScore) : '—'}
-                    />
-                    <span className="score-sep">×</span>
-                    <input
-                      className="score-input"
-                      type="number" inputMode="numeric" min={0} max={99}
-                      value={s.away}
-                      onChange={(e) => setScores((p) => ({ ...p, [match.id]: { ...p[match.id], away: e.target.value.replace(/\D/g, '') } }))}
-                      placeholder={hasResult ? String(match.awayScore) : '—'}
-                    />
-                  </div>
-
-                  <div className="result-team result-team--away">
-                    {match.awayTeam && <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />}
-                    <span>{match.awayTeam?.name ?? '—'}</span>
-                  </div>
-                </div>
+                  {/* Penalty winner selector — appears when scores are equal */}
+                  {s.home !== '' && s.away !== '' && Number(s.home) === Number(s.away) && (
+                    <div className="penalty-selector">
+                      <span className="penalty-label">Pênaltis — quem avançou?</span>
+                      <div className="penalty-options">
+                        {[
+                          { id: match.homeTeam ? teams.find(t => t.name === match.homeTeam!.name)?.id : null, team: match.homeTeam },
+                          { id: match.awayTeam ? teams.find(t => t.name === match.awayTeam!.name)?.id : null, team: match.awayTeam },
+                        ].filter(o => o.team).map((opt) => (
+                          <button
+                            key={opt.team!.name}
+                            className={`penalty-option ${penaltyWinners[match.id] === String(opt.id) ? 'penalty-option--active' : ''}`}
+                            onClick={() => setPenaltyWinners(p => ({ ...p, [match.id]: String(opt.id) }))}
+                            type="button"
+                          >
+                            <Flag code={opt.team!.flag} name={opt.team!.name} />
+                            {opt.team!.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
-              {hasTeams && (
-                <button
-                  className={`btn-save ${savedWhat === 'result' ? 'btn-save--saved' : ''}`}
-                  onClick={() => handleSaveResult(match.id)}
-                  disabled={isSaving || s.home === '' || s.away === ''}
-                >
-                  {savedWhat === 'result' ? 'Salvo ✓' : isSaving ? 'Salvando...' : 'Salvar'}
-                </button>
-              )}
+              {hasTeams && (() => {
+                const isDraw = s.home !== '' && s.away !== '' && Number(s.home) === Number(s.away);
+                const canSave = s.home !== '' && s.away !== '' && (!isDraw || !!penaltyWinners[match.id]);
+                return (
+                  <button
+                    className={`btn-save ${savedWhat === 'result' ? 'btn-save--saved' : ''}`}
+                    onClick={() => handleSaveResult(match.id, match)}
+                    disabled={isSaving || !canSave}
+                  >
+                    {savedWhat === 'result' ? 'Salvo ✓' : isSaving ? 'Salvando...' : 'Salvar'}
+                  </button>
+                );
+              })()}
 
               {hasResult && (
                 <p className="playoff-advance-note">

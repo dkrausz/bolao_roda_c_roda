@@ -22,8 +22,9 @@ function MatchTile({ match }: { match: BracketMatch }) {
   const finished = match.homeScore !== null && match.awayScore !== null;
   const homeName = match.homeTeam?.name ?? 'A definir';
   const awayName = match.awayTeam?.name ?? 'A definir';
-  const homeWon = finished && match.homeScore! > match.awayScore!;
-  const awayWon = finished && match.awayScore! > match.homeScore!;
+  const penWinner = match.penaltyWinnerId;
+  const homeWon = finished && (match.homeScore! > match.awayScore! || (match.homeScore === match.awayScore && penWinner === match.homeTeamId));
+  const awayWon = finished && (match.awayScore! > match.homeScore! || (match.homeScore === match.awayScore && penWinner === match.awayTeamId));
 
   return (
     <div className={`bracket-tile ${finished ? 'bracket-tile--done' : ''}`}>
@@ -50,6 +51,11 @@ function MatchTile({ match }: { match: BracketMatch }) {
         )}
         {finished && <span className="bracket-score">{match.awayScore}</span>}
       </div>
+      {finished && penWinner && (
+        <div className="bracket-penalty-note">
+          {match.penaltyWinner?.name ?? ''} avançou nos pênaltis
+        </div>
+      )}
     </div>
   );
 }
