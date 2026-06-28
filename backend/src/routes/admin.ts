@@ -100,31 +100,25 @@ router.put('/matches/:id/result', adminAuth, async (req: Request, res: Response)
 
   const predictions = await prisma.prediction.findMany({ where: { matchId } });
 
-  console.log(`[result] match=${matchId} phase=${match.phase} score=${home_score}x${away_score} penaltyWinner=${match.penaltyWinnerId} predictions=${predictions.length}`);
-
-  try {
-    await Promise.all(
-      predictions.map((pred) => {
-        const pts = calculatePoints(
-          home_score,
-          away_score,
-          pred.homeScore,
-          pred.awayScore,
-          match.phase !== 'group' ? (match.penaltyWinnerId ?? null) : undefined,
-          match.phase !== 'group' ? (pred.penaltyWinnerId ?? null) : undefined,
-          match.homeTeamId,
-          match.awayTeamId,
-        );
-        console.log(`  pred=${pred.id} user=${pred.userId} ${pred.homeScore}x${pred.awayScore} → ${pts}pts`);
-        return prisma.prediction.update({
-          where: { id: pred.id },
-          data: { points: pts },
-        });
+  await Promise.all(
+    predictions.map((pred) =>
+      prisma.prediction.update({
+        where: { id: pred.id },
+        data: {
+          points: calculatePoints(
+            home_score,
+            away_score,
+            pred.homeScore,
+            pred.awayScore,
+            match.phase !== 'group' ? (match.penaltyWinnerId ?? null) : undefined,
+            match.phase !== 'group' ? (pred.penaltyWinnerId ?? null) : undefined,
+            match.homeTeamId,
+            match.awayTeamId,
+          ),
+        },
       })
-    );
-  } catch (err) {
-    console.error('[result] failed to update points:', err);
-  }
+    )
+  );
 
   // Auto-advance knockout bracket
   const isKnockout = match.phase !== 'group';
