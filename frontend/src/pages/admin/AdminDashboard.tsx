@@ -26,10 +26,10 @@ interface TeamOption {
 
 const PHASE_LABELS: Record<string, string> = {
   group: 'Grupos',
-  round_of_32: 'Oitavas',
-  round_of_16: 'Quartas',
-  quarterfinal: 'Semifinal',
-  semifinal: 'Final',
+  round_of_32: '1/16 avos',
+  round_of_16: 'Oitavas',
+  quarterfinal: 'Quartas',
+  semifinal: 'Semifinal',
   bronze: '3º Lugar',
   final: 'Final',
 };
@@ -309,7 +309,7 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
   return (
     <div className="admin-section">
       <div className="admin-section-header">
-        <h3 className="admin-section-title">Playoffs</h3>
+        <h3 className="admin-section-title">Mata-Mata</h3>
       </div>
 
       <div className="filter-tabs" style={{ marginBottom: 16 }}>
@@ -479,7 +479,7 @@ export default function AdminDashboard({ credentials, onLogout }: Props) {
           ⚽ Grupos
         </button>
         <button className={`admin-tab ${tab === 'playoff' ? 'admin-tab--active' : ''}`} onClick={() => setTab('playoff')}>
-          🥊 Playoffs
+          🥊 Mata-Mata
         </button>
         <button className={`admin-tab ${tab === 'users' ? 'admin-tab--active' : ''}`} onClick={() => setTab('users')}>
           👤 Usuários

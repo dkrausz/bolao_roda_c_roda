@@ -13,7 +13,7 @@ export default function BottomNav() {
       </NavLink>
       <NavLink to="/playoff" className={({ isActive }) => `nav-item ${isActive ? 'nav-item--active' : ''}`}>
         <span className="nav-icon">🥊</span>
-        <span className="nav-label">Playoffs</span>
+        <span className="nav-label">Mata-Mata</span>
       </NavLink>
     </nav>
   );

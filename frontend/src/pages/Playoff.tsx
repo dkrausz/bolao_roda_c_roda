@@ -66,7 +66,7 @@ function PhaseSection({ title, matches }: { title: string; matches: BracketMatch
   );
 }
 
-export default function Playoff() {
+export default function MataMata() {
   const [data, setData] = useState<BracketData | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -87,10 +87,10 @@ export default function Playoff() {
   }, []);
 
   const phases: [string, keyof BracketData][] = [
-    ['Oitavas de Final', 'round_of_32'],
-    ['Quartas de Final', 'round_of_16'],
-    ['Semifinais', 'quarterfinal'],
-    ['Finais', 'semifinal'],
+    ['1/16 avos de Final', 'round_of_32'],
+    ['Oitavas de Final', 'round_of_16'],
+    ['Quartas de Final', 'quarterfinal'],
+    ['Semifinais', 'semifinal'],
     ['3º Lugar', 'bronze'],
     ['Final', 'final'],
   ];
@@ -99,7 +99,7 @@ export default function Playoff() {
     <div className="page page--bracket">
       <header className="page-header">
         <div>
-          <h2 className="page-title">Playoffs</h2>
+          <h2 className="page-title">Mata-Mata</h2>
           <p className="page-subtitle">Copa do Mundo 2026</p>
         </div>
         {lastUpdated && (
