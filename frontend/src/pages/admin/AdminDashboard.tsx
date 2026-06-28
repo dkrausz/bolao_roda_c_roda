@@ -340,64 +340,46 @@ function KnockoutRow({ match, teams, credentials, onRefresh }: KnockoutRowProps)
         <span className="result-phase">{PHASE_LABELS[match.phase]}</span>
       </div>
 
-      {/* Team assignment — shown when teams missing */}
-      {!hasTeams && (
-        <div className="playoff-team-assign">
-          <div className="playoff-team-row">
-            <label className="field-label">Mandante</label>
-            {match.homeTeam ? (
-              <span className="playoff-team-set">
-                <Flag code={match.homeTeam.flag} name={match.homeTeam.name} />
-                {match.homeTeam.name}
-              </span>
-            ) : (
-              <select
-                className="field-input field-input--select"
-                value={homeTeamSel}
-                onChange={(e) => setHomeTeamSel(e.target.value)}
-              >
-                <option value="">— selecionar time —</option>
-                {Object.entries(teamsByGroup).sort().map(([grp, ts]) => (
-                  <optgroup key={grp} label={`Grupo ${grp}`}>
-                    {ts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            )}
-          </div>
-          <div className="playoff-team-row">
-            <label className="field-label">Visitante</label>
-            {match.awayTeam ? (
-              <span className="playoff-team-set">
-                <Flag code={match.awayTeam.flag} name={match.awayTeam.name} />
-                {match.awayTeam.name}
-              </span>
-            ) : (
-              <select
-                className="field-input field-input--select"
-                value={awayTeamSel}
-                onChange={(e) => setAwayTeamSel(e.target.value)}
-              >
-                <option value="">— selecionar time —</option>
-                {Object.entries(teamsByGroup).sort().map(([grp, ts]) => (
-                  <optgroup key={grp} label={`Grupo ${grp}`}>
-                    {ts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            )}
-          </div>
-          {(!match.homeTeam || !match.awayTeam) && (
-            <button
-              className={`btn-save ${saved === 'teams' ? 'btn-save--saved' : ''}`}
-              onClick={handleSaveTeams}
-              disabled={saving || (!homeTeamSel && !match.homeTeam) || (!awayTeamSel && !match.awayTeam)}
-            >
-              {saved === 'teams' ? 'Salvo ✓' : saving ? 'Salvando...' : 'Definir Times'}
-            </button>
-          )}
+      {/* Team assignment — always shown */}
+      <div className="playoff-team-assign">
+        <div className="playoff-team-row">
+          <label className="field-label">Mandante</label>
+          <select
+            className="field-input field-input--select"
+            value={homeTeamSel || (match.homeTeamId ? String(match.homeTeamId) : '')}
+            onChange={(e) => setHomeTeamSel(e.target.value)}
+          >
+            <option value="">— selecionar time —</option>
+            {Object.entries(teamsByGroup).sort().map(([grp, ts]) => (
+              <optgroup key={grp} label={`Grupo ${grp}`}>
+                {ts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
         </div>
-      )}
+        <div className="playoff-team-row">
+          <label className="field-label">Visitante</label>
+          <select
+            className="field-input field-input--select"
+            value={awayTeamSel || (match.awayTeamId ? String(match.awayTeamId) : '')}
+            onChange={(e) => setAwayTeamSel(e.target.value)}
+          >
+            <option value="">— selecionar time —</option>
+            {Object.entries(teamsByGroup).sort().map(([grp, ts]) => (
+              <optgroup key={grp} label={`Grupo ${grp}`}>
+                {ts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+        <button
+          className={`btn-save ${saved === 'teams' ? 'btn-save--saved' : ''}`}
+          onClick={handleSaveTeams}
+          disabled={saving || (!homeTeamSel && !match.homeTeamId) || (!awayTeamSel && !match.awayTeamId)}
+        >
+          {saved === 'teams' ? 'Salvo ✓' : saving ? 'Salvando...' : 'Definir Times'}
+        </button>
+      </div>
 
       {/* Score inputs — shown when teams are set */}
       {hasTeams && (
