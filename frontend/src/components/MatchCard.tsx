@@ -8,7 +8,7 @@ function TeamFlag({ code, name }: { code: string | null; name: string | null }) 
 
 interface Props {
   match: Match;
-  onSave: (matchId: number, home: number, away: number) => Promise<void>;
+  onSave: (matchId: number, home: number, away: number, penaltyWinnerId?: number) => Promise<void>;
 }
 
 function formatTime(dateStr: string): string {
@@ -26,26 +26,37 @@ function pointsLabel(points: number | null) {
   return null;
 }
 
+const KNOCKOUT_PHASES = new Set(['round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final']);
+
 export default function MatchCard({ match, onSave }: Props) {
   const [home, setHome] = useState('');
   const [away, setAway] = useState('');
+  const [penaltyWinner, setPenaltyWinner] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const isKnockout = KNOCKOUT_PHASES.has(match.phase);
 
   useEffect(() => {
     if (match.predHome !== null) setHome(String(match.predHome));
     if (match.predAway !== null) setAway(String(match.predAway));
-  }, [match.predHome, match.predAway]);
+    if (match.predPenaltyWinnerId !== null) setPenaltyWinner(String(match.predPenaltyWinnerId));
+  }, [match.predHome, match.predAway, match.predPenaltyWinnerId]);
 
   const isFinished = match.homeScore !== null && match.awayScore !== null;
   const hasPred = match.predHome !== null && match.predAway !== null;
   const pts = pointsLabel(match.predPoints);
 
+  const isDraw = home !== '' && away !== '' && home === away;
+  const needsPenalty = isKnockout && isDraw;
+  const canSave = home !== '' && away !== '' && (!needsPenalty || !!penaltyWinner);
+
   const handleSave = async () => {
-    if (home === '' || away === '') return;
+    if (!canSave) return;
     setSaving(true);
     try {
-      await onSave(match.id, Number(home), Number(away));
+      const pwId = needsPenalty && penaltyWinner ? Number(penaltyWinner) : undefined;
+      await onSave(match.id, Number(home), Number(away), pwId);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -76,22 +87,30 @@ export default function MatchCard({ match, onSave }: Props) {
             <div className="pred-inputs">
               <input
                 className="score-input"
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={0} max={99}
+                maxLength={2}
                 value={home}
-                onChange={(e) => setHome(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, '');
+                  setHome(v);
+                  if (v !== away) setPenaltyWinner('');
+                }}
                 disabled={!match.isOpen}
                 placeholder="—"
               />
               <span className="score-sep">×</span>
               <input
                 className="score-input"
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={0} max={99}
+                maxLength={2}
                 value={away}
-                onChange={(e) => setAway(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, '');
+                  setAway(v);
+                  if (home !== v) setPenaltyWinner('');
+                }}
                 disabled={!match.isOpen}
                 placeholder="—"
               />
@@ -113,11 +132,46 @@ export default function MatchCard({ match, onSave }: Props) {
         </div>
       </div>
 
+      {/* Seletor de pênaltis — mata-mata com empate */}
+      {isKnockout && !isFinished && match.isOpen && isDraw && (
+        <div className="penalty-selector">
+          <span className="penalty-label">Quem passa nos pênaltis?</span>
+          <div className="penalty-options">
+            <button
+              type="button"
+              className={`penalty-option${penaltyWinner === String(match.homeTeamId) ? ' penalty-option--active' : ''}`}
+              onClick={() => setPenaltyWinner(String(match.homeTeamId))}
+            >
+              <TeamFlag code={match.homeTeamFlag} name={match.homeTeamName} />
+              <span>{match.homeTeamName}</span>
+            </button>
+            <button
+              type="button"
+              className={`penalty-option${penaltyWinner === String(match.awayTeamId) ? ' penalty-option--active' : ''}`}
+              onClick={() => setPenaltyWinner(String(match.awayTeamId))}
+            >
+              <TeamFlag code={match.awayTeamFlag} name={match.awayTeamName} />
+              <span>{match.awayTeamName}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mostrar quem o usuário previu nos pênaltis (jogo finalizado) */}
+      {isKnockout && isFinished && hasPred && match.predPenaltyWinnerId && (
+        <div className="pred-saved-score">
+          Palpite pênaltis: {
+            match.predPenaltyWinnerId === match.homeTeamId ? match.homeTeamName :
+            match.predPenaltyWinnerId === match.awayTeamId ? match.awayTeamName : '—'
+          }
+        </div>
+      )}
+
       {match.isOpen && (
         <button
           className={`btn-save${saved ? ' btn-save--saved' : ''}`}
           onClick={handleSave}
-          disabled={saving || home === '' || away === ''}
+          disabled={saving || !canSave}
         >
           {saved ? 'Salvo ✓' : saving ? 'Salvando...' : hasPred ? 'Atualizar palpite' : 'Salvar palpite'}
         </button>

@@ -44,8 +44,13 @@ export default function Matches() {
 
   useEffect(() => { fetchMatches(); }, [fetchMatches]);
 
-  const handleSave = async (matchId: number, home: number, away: number) => {
-    await api.post('/api/predictions', { match_id: matchId, home_score: home, away_score: away });
+  const handleSave = async (matchId: number, home: number, away: number, penaltyWinnerId?: number) => {
+    await api.post('/api/predictions', {
+      match_id: matchId,
+      home_score: home,
+      away_score: away,
+      ...(penaltyWinnerId && { penalty_winner_id: penaltyWinnerId }),
+    });
     fetchMatches();
   };
 

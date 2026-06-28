@@ -22,6 +22,7 @@ export interface Match {
   awayScore: number | null;
   predHome: number | null;
   predAway: number | null;
+  predPenaltyWinnerId: number | null;
   predPoints: number | null;
   isOpen: boolean;
 }

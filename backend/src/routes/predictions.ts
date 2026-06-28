@@ -7,10 +7,11 @@ const router = Router();
 
 router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.id;
-  const { match_id, home_score, away_score } = req.body as {
+  const { match_id, home_score, away_score, penalty_winner_id } = req.body as {
     match_id?: number;
     home_score?: number;
     away_score?: number;
+    penalty_winner_id?: number;
   };
 
   if (match_id === undefined || home_score === undefined || away_score === undefined) {
@@ -35,10 +36,14 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
     return;
   }
 
+  const penaltyData = home_score === away_score && match.phase !== 'group' && penalty_winner_id
+    ? { penaltyWinnerId: penalty_winner_id }
+    : { penaltyWinnerId: null };
+
   const prediction = await prisma.prediction.upsert({
     where: { userId_matchId: { userId, matchId: match_id } },
-    create: { userId, matchId: match_id, homeScore: home_score, awayScore: away_score },
-    update: { homeScore: home_score, awayScore: away_score },
+    create: { userId, matchId: match_id, homeScore: home_score, awayScore: away_score, ...penaltyData },
+    update: { homeScore: home_score, awayScore: away_score, ...penaltyData },
   });
 
   res.json(prediction);
