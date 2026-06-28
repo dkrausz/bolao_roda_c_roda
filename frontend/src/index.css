@@ -771,7 +771,7 @@ html, body {
   text-overflow: ellipsis;
 }
 
-.result-team--away { justify-content: flex-end; flex-direction: row-reverse; }
+.result-team--away { justify-content: flex-start; flex-direction: row-reverse; }
 
 .result-score-inputs {
   display: flex;
