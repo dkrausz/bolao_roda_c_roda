@@ -36,6 +36,34 @@ router.get('/users', adminAuth, async (_req: Request, res: Response): Promise<vo
   res.json(users);
 });
 
+router.get('/teams', adminAuth, async (_req: Request, res: Response): Promise<void> => {
+  const teams = await prisma.team.findMany({
+    select: { id: true, name: true, flag: true, groupLetter: true },
+    orderBy: [{ groupLetter: 'asc' }, { name: 'asc' }],
+  });
+  res.json(teams);
+});
+
+// Set or update teams for a knockout match
+router.put('/matches/:id/teams', adminAuth, async (req: Request, res: Response): Promise<void> => {
+  const matchId = Number(req.params.id);
+  const { home_team_id, away_team_id } = req.body as { home_team_id?: number | null; away_team_id?: number | null };
+
+  const match = await prisma.match.update({
+    where: { id: matchId },
+    data: {
+      ...(home_team_id !== undefined && { homeTeamId: home_team_id }),
+      ...(away_team_id !== undefined && { awayTeamId: away_team_id }),
+    },
+    include: {
+      homeTeam: { select: { name: true, flag: true } },
+      awayTeam: { select: { name: true, flag: true } },
+    },
+  });
+
+  res.json(match);
+});
+
 router.put('/matches/:id/result', adminAuth, async (req: Request, res: Response): Promise<void> => {
   const matchId = Number(req.params.id);
   const { home_score, away_score } = req.body as { home_score?: number; away_score?: number };
@@ -45,9 +73,13 @@ router.put('/matches/:id/result', adminAuth, async (req: Request, res: Response)
     return;
   }
 
-  await prisma.match.update({
+  const match = await prisma.match.update({
     where: { id: matchId },
     data: { homeScore: home_score, awayScore: away_score },
+    include: {
+      homeTeam: true,
+      awayTeam: true,
+    },
   });
 
   const predictions = await prisma.prediction.findMany({ where: { matchId } });
@@ -61,12 +93,50 @@ router.put('/matches/:id/result', adminAuth, async (req: Request, res: Response)
     )
   );
 
+  // Auto-advance knockout bracket
+  const isKnockout = match.phase !== 'group';
+  if (isKnockout && match.homeTeamId && match.awayTeamId) {
+    const winnerId = home_score > away_score ? match.homeTeamId : match.awayTeamId;
+    const loserId  = home_score > away_score ? match.awayTeamId : match.homeTeamId;
+
+    const bracketMatch = await prisma.match.findUnique({
+      where: { id: matchId },
+      select: { nextMatchId: true, nextMatchSlot: true, loserMatchId: true, loserMatchSlot: true },
+    });
+
+    const ops: Promise<unknown>[] = [];
+
+    if (bracketMatch?.nextMatchId && bracketMatch.nextMatchSlot) {
+      ops.push(
+        prisma.match.update({
+          where: { id: bracketMatch.nextMatchId },
+          data: bracketMatch.nextMatchSlot === 'home'
+            ? { homeTeamId: winnerId }
+            : { awayTeamId: winnerId },
+        })
+      );
+    }
+
+    if (bracketMatch?.loserMatchId && bracketMatch.loserMatchSlot) {
+      ops.push(
+        prisma.match.update({
+          where: { id: bracketMatch.loserMatchId },
+          data: bracketMatch.loserMatchSlot === 'home'
+            ? { homeTeamId: loserId }
+            : { awayTeamId: loserId },
+        })
+      );
+    }
+
+    await Promise.all(ops);
+  }
+
   res.json({ ok: true, predictions_updated: predictions.length });
 });
 
 router.get('/matches', adminAuth, async (_req: Request, res: Response): Promise<void> => {
   const matches = await prisma.match.findMany({
-    where: { homeTeamId: { not: null } },
+    where: { matchDate: { not: null } },
     include: {
       homeTeam: { select: { name: true, flag: true } },
       awayTeam: { select: { name: true, flag: true } },

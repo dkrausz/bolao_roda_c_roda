@@ -40,18 +40,28 @@ model Team {
 }
 
 model Match {
-  id          Int          @id @default(autoincrement())
-  matchDate   DateTime?    @map("match_date")
-  phase       Phase        @default(group)
-  groupLetter String?      @map("group_letter")
-  homeTeamId  Int?         @map("home_team_id")
-  awayTeamId  Int?         @map("away_team_id")
-  homeScore   Int?         @map("home_score")
-  awayScore   Int?         @map("away_score")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  homeTeam    Team?        @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeam    Team?        @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  predictions Prediction[]
+  id              Int          @id @default(autoincrement())
+  matchDate       DateTime?    @map("match_date")
+  phase           Phase        @default(group)
+  groupLetter     String?      @map("group_letter")
+  homeTeamId      Int?         @map("home_team_id")
+  awayTeamId      Int?         @map("away_team_id")
+  homeScore       Int?         @map("home_score")
+  awayScore       Int?         @map("away_score")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  // Playoff bracket wiring
+  nextMatchId     Int?         @map("next_match_id")
+  nextMatchSlot   String?      @map("next_match_slot")   // 'home' | 'away'
+  loserMatchId    Int?         @map("loser_match_id")    // only SF → bronze
+  loserMatchSlot  String?      @map("loser_match_slot")  // 'home' | 'away'
+
+  homeTeam        Team?        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam        Team?        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  nextMatch       Match?       @relation("WinnerFlow", fields: [nextMatchId], references: [id])
+  prevWinnerMatches Match[]    @relation("WinnerFlow")
+  loserMatch      Match?       @relation("LoserFlow", fields: [loserMatchId], references: [id])
+  prevLoserMatches Match[]     @relation("LoserFlow")
+  predictions     Prediction[]
 
   @@index([matchDate])
   @@map("matches")

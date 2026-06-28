@@ -863,3 +863,143 @@ html, body {
   padding: 32px 16px;
   font-size: 0.9rem;
 }
+
+/* ============================================================
+   BRACKET / PLAYOFF PAGE
+   ============================================================ */
+.page--bracket .page-header {
+  align-items: flex-start;
+}
+
+.bracket-refresh-hint {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  padding-top: 4px;
+}
+
+.bracket-container {
+  padding: 12px 0;
+}
+
+.bracket-phase {
+  margin-bottom: 8px;
+}
+
+.bracket-phase-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bracket-phase-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.bracket-tile {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bracket-tile--done {
+  border-left: 3px solid var(--primary);
+}
+
+.bracket-date {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.95rem;
+}
+
+.bracket-team--winner .bracket-team-name {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.bracket-team--tbd .bracket-team-name,
+.bracket-team-name.bracket-team--tbd {
+  color: var(--text-2);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.bracket-score {
+  margin-left: auto;
+  font-size: 1.1rem;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: right;
+}
+
+.bracket-team-name {
+  flex: 1;
+}
+
+.loading-state {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+/* ============================================================
+   ADMIN PLAYOFF
+   ============================================================ */
+.playoff-team-assign {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.playoff-team-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.playoff-team-row .field-label {
+  min-width: 80px;
+  font-size: 0.8rem;
+}
+
+.playoff-team-set {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--primary);
+}
+
+.field-input--select {
+  flex: 1;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.playoff-advance-note {
+  font-size: 0.75rem;
+  color: var(--primary);
+  margin-top: 6px;
+  font-style: italic;
+}

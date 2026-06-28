@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Matches from './pages/Matches';
+import Playoff from './pages/Playoff';
 import PlayerPredictions from './pages/PlayerPredictions';
 import BottomNav from './components/BottomNav';
 import AdminApp from './pages/admin/AdminApp';
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/jogos" element={
                 auth ? <Matches /> : <Navigate to="/entrar" replace />
               } />
+              <Route path="/playoff" element={<Playoff />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             {auth && <BottomNav />}

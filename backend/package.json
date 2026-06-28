@@ -9,6 +9,7 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "bracket:link": "ts-node prisma/bracketLink.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
