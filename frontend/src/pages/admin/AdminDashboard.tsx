@@ -11,6 +11,8 @@ interface AdminMatch {
   matchDate: string;
   phase: string;
   groupLetter: string | null;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
   homeScore: number | null;
   awayScore: number | null;
   penaltyWinnerId: number | null;
@@ -441,14 +443,14 @@ function PlayoffAdmin({ credentials }: { credentials: string }) {
                   {/* Penalty winner selector — appears when scores are equal */}
                   {s.home !== '' && s.away !== '' && Number(s.home) === Number(s.away) && (
                     <div className="penalty-selector">
-                      <span className="penalty-label">Pênaltis — quem avançou?</span>
+                      <span className="penalty-label">Quem passou nos pênaltis?</span>
                       <div className="penalty-options">
                         {[
-                          { id: match.homeTeam ? teams.find(t => t.name === match.homeTeam!.name)?.id : null, team: match.homeTeam },
-                          { id: match.awayTeam ? teams.find(t => t.name === match.awayTeam!.name)?.id : null, team: match.awayTeam },
-                        ].filter(o => o.team).map((opt) => (
+                          { id: match.homeTeamId, team: match.homeTeam },
+                          { id: match.awayTeamId, team: match.awayTeam },
+                        ].filter(o => o.team && o.id).map((opt) => (
                           <button
-                            key={opt.team!.name}
+                            key={opt.id}
                             className={`penalty-option ${penaltyWinners[match.id] === String(opt.id) ? 'penalty-option--active' : ''}`}
                             onClick={() => setPenaltyWinners(p => ({ ...p, [match.id]: String(opt.id) }))}
                             type="button"
