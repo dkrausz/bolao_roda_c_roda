@@ -697,7 +697,14 @@ html, body {
 
 .admin-form { display: flex; flex-direction: column; gap: 14px; max-width: 480px; }
 
-.filter-tabs { display: flex; gap: 6px; }
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 12px;
+  scrollbar-width: none;
+}
+.filter-tabs::-webkit-scrollbar { display: none; }
 
 .filter-tab {
   padding: 5px 10px;
