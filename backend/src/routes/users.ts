@@ -18,9 +18,22 @@ router.get('/:id/predictions', async (req: Request, res: Response): Promise<void
 
   const predictions = await prisma.prediction.findMany({
     where: { userId },
-    include: {
+    select: {
+      id: true,
+      homeScore: true,
+      awayScore: true,
+      points: true,
+      penaltyWinnerId: true,
       match: {
-        include: {
+        select: {
+          id: true,
+          matchDate: true,
+          phase: true,
+          groupLetter: true,
+          homeScore: true,
+          awayScore: true,
+          homeTeamId: true,
+          awayTeamId: true,
           homeTeam: { select: { name: true, flag: true } },
           awayTeam: { select: { name: true, flag: true } },
         },

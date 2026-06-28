@@ -7,6 +7,7 @@ interface PredictionEntry {
   homeScore: number;
   awayScore: number;
   points: number | null;
+  penaltyWinnerId: number | null;
   match: {
     id: number;
     matchDate: string;
@@ -14,6 +15,8 @@ interface PredictionEntry {
     groupLetter: string | null;
     homeScore: number | null;
     awayScore: number | null;
+    homeTeamId: number | null;
+    awayTeamId: number | null;
     homeTeam: { name: string; flag: string } | null;
     awayTeam: { name: string; flag: string } | null;
   };
@@ -49,6 +52,7 @@ export default function PlayerPredictions() {
   const [data, setData] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
 
   useEffect(() => {
     api.get<PlayerData>(`/api/users/${id}/predictions`)
@@ -60,8 +64,16 @@ export default function PlayerPredictions() {
   if (loading) return <div className="loading">Carregando...</div>;
   if (notFound || !data) return <div className="loading">Jogador não encontrado.</div>;
 
+  const now = new Date();
   const total = data.predictions.reduce((s, p) => s + (p.points ?? 0), 0);
   const exact = data.predictions.filter((p) => p.points !== null && p.points >= 5).length;
+
+  const filtered = data.predictions.filter((p) => {
+    const isPast = new Date(p.match.matchDate) < now;
+    return filter === 'past' ? isPast : !isPast;
+  });
+
+  const KNOCKOUT_PHASES = new Set(['round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final']);
 
   return (
     <div className="page">
@@ -73,13 +85,28 @@ export default function PlayerPredictions() {
         </div>
       </header>
 
+      <div className="filter-tabs">
+        <button className={`filter-tab ${filter === 'upcoming' ? 'filter-tab--active' : ''}`} onClick={() => setFilter('upcoming')}>
+          Próximos
+        </button>
+        <button className={`filter-tab ${filter === 'past' ? 'filter-tab--active' : ''}`} onClick={() => setFilter('past')}>
+          Passados
+        </button>
+      </div>
+
       <div className="pred-list">
-        {data.predictions.length === 0 && (
-          <p className="empty-msg">Nenhum palpite ainda.</p>
+        {filtered.length === 0 && (
+          <p className="empty-msg">Nenhum palpite nessa categoria.</p>
         )}
-        {data.predictions.map((p) => {
+        {filtered.map((p) => {
           const m = p.match;
           const hasResult = m.homeScore !== null;
+          const isKnockout = KNOCKOUT_PHASES.has(m.phase);
+          const isPenaltyDraw = isKnockout && p.penaltyWinnerId !== null;
+          const penaltyTeamName = isPenaltyDraw
+            ? (p.penaltyWinnerId === m.homeTeamId ? m.homeTeam?.name : m.awayTeam?.name)
+            : null;
+
           return (
             <div key={p.id} className={`pred-card ${hasResult ? 'pred-card--finished' : ''}`}>
               <div className="pred-card-top">
@@ -103,6 +130,9 @@ export default function PlayerPredictions() {
                   <span>{m.awayTeam?.name ?? '—'}</span>
                 </div>
               </div>
+              {isPenaltyDraw && penaltyTeamName && (
+                <div className="pred-penalty-note">🥅 Pênaltis: {penaltyTeamName}</div>
+              )}
             </div>
           );
         })}

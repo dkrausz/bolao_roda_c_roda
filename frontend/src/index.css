@@ -438,6 +438,13 @@ html, body {
 .pred-points--partial { background: #2a2200; color: var(--yellow); }
 .pred-points--miss    { background: #2e0d0d; color: var(--red); }
 
+.pred-penalty-note {
+  font-size: 0.72rem;
+  color: var(--text-2);
+  text-align: center;
+  margin-top: 4px;
+}
+
 .pred-saved-score {
   font-size: 0.7rem;
   color: var(--text-2);
