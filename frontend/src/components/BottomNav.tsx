@@ -11,7 +11,7 @@ export default function BottomNav() {
         <span className="nav-icon">⚽</span>
         <span className="nav-label">Jogos</span>
       </NavLink>
-      <NavLink to="/playoff" className={({ isActive }) => `nav-item ${isActive ? 'nav-item--active' : ''}`}>
+      <NavLink to="/mata-mata" className={({ isActive }) => `nav-item ${isActive ? 'nav-item--active' : ''}`}>
         <span className="nav-icon">🥊</span>
         <span className="nav-label">Mata-Mata</span>
       </NavLink>

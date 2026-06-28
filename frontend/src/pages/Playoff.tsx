@@ -74,15 +74,17 @@ function PhaseSection({ title, matches }: { title: string; matches: BracketMatch
 
 export default function MataMata() {
   const [data, setData] = useState<BracketData | null>(null);
+  const [error, setError] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchBracket = async () => {
     try {
       const res = await axios.get<BracketData>(`${API}/api/bracket`);
       setData(res.data);
+      setError(false);
       setLastUpdated(new Date());
     } catch {
-      // keep previous data on error
+      setError(true);
     }
   };
 
@@ -115,7 +117,9 @@ export default function MataMata() {
         )}
       </header>
 
-      {!data ? (
+      {error ? (
+        <div className="loading-state">Erro ao carregar chaveamento. Tente novamente.</div>
+      ) : !data ? (
         <div className="loading-state">Carregando chaveamento...</div>
       ) : (
         <div className="bracket-container">

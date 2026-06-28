@@ -50,6 +50,7 @@ export default function App() {
               <Route path="/jogos" element={
                 auth ? <Matches /> : <Navigate to="/entrar" replace />
               } />
+              <Route path="/mata-mata" element={<Playoff />} />
               <Route path="/playoff" element={<Playoff />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
