@@ -20,10 +20,10 @@ function formatTime(dateStr: string): string {
 }
 
 function pointsLabel(points: number | null) {
-  if (points === 6) return { text: '⭐ 6 pts', cls: 'exact' };
-  if (points === 3) return { text: '✓ 3 pts', cls: 'partial' };
-  if (points === 0) return { text: '✗ 0 pts', cls: 'miss' };
-  return null;
+  if (points === null) return null;
+  if (points >= 6) return { text: `⭐ ${points} pts`, cls: 'exact' };
+  if (points > 0)  return { text: `✓ ${points} pts`, cls: 'partial' };
+  return { text: '✗ 0 pts', cls: 'miss' };
 }
 
 const KNOCKOUT_PHASES = new Set(['round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final']);
